@@ -10,10 +10,6 @@
 
 #define N_PIXELS  1  // Number of pixels you are using
 #define LED_PIN   6  // NeoPixel LED strand is connected to GPIO #0 / D0
-#define SLOW_FADE 3500 //  the speed it takes to fade in and out 10000
-#define FAST_FADE 1 // faster fades
-#define SLOW_PACE_SWITCH 60 //  how often do we change pace?
-#define FAST_PACE_SWITCH 900
 #define SENSITIVITY 10 //  how sensitive the sensor is 9
 #define AUDIOPIN 2
 #define POT_PIN 5
@@ -22,12 +18,6 @@ Adafruit_NeoPixel  strip = Adafruit_NeoPixel(N_PIXELS, LED_PIN, NEO_GRB + NEO_KH
 
 // fading
 int lastValue = 0;
-
-// pace switching
-int paceCount = 0;
-int pace = SLOW_FADE;
-boolean slow = true;
-int pace_switch = SLOW_PACE_SWITCH;
 
 //  FFT
 int x = 0;
@@ -67,7 +57,7 @@ void loop()
   int value = data_avgs[1];//0 for bass
   
   if(value > 0) {
-    Serial.println(value);
+//    Serial.println(value);
     
     // fade
     if(lastValue < value) {
@@ -78,40 +68,26 @@ void loop()
     
     lastValue = value;
   }
-  
-  paceCount++;
-  if(paceCount > pace_switch) {
-    paceCount = 0;
-    if(slow) {
-      slow = false;
-      pace = FAST_FADE;
-      pace_switch = FAST_PACE_SWITCH;
-//      Serial.println("switching to fast");
-    } else {
-      slow = true;
-      pace = SLOW_FADE;
-      pace_switch = SLOW_PACE_SWITCH;
-//      Serial.println("switching to slow");
-    }
-  }
-  
+
 }
 
 void fadeUp(int diff, int startLow) {
+  Serial.println(sin(startLow));
   int count = 0;
   while(diff > count) {
     write_strip((startLow + count));
     count++;
-    delayMicroseconds(pace);
+    delayMicroseconds(1);
   }
 } 
 
 void fadeDown(int diff, int startHigh) {
+  Serial.println(cos(startHigh));
   int count = 0;
   while(diff > count) {
     write_strip((startHigh - count));
     count++;
-    delayMicroseconds(pace);
+    delayMicroseconds(diff*20);
   }
 }
 
