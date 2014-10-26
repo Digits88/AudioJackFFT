@@ -5,8 +5,8 @@
 //  Mike Newell
 //
 
-#include <fix_fft.h>
-#include <Adafruit_NeoPixel.h>
+#include "fix_fft.h"
+#include "Adafruit_NeoPixel.h"
 
 #define N_PIXELS  1  // Number of pixels you are using
 #define LED_PIN   6  // NeoPixel LED strand is connected to GPIO #0 / D0
