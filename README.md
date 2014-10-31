@@ -4,9 +4,15 @@ Audio Reactive LEDS
 Dependancies
 ------------
 
+Software:
+
 [Adafruit_neopixel library](https://github.com/adafruit/Adafruit_NeoPixel)
 [fix_fft](https://github.com/newshorts/AudioJackFFT/tree/colorshifting/AudioJackFFT/fix_fft)
 [Radio Head](http://www.airspayce.com/mikem/arduino/RadioHead/index.html)
+
+Hardware:
+
+[Op Amp](http://123d.circuits.io/circuits/404587-simple-op-amp-low-pass-filter-for-3-5mm-audio-jack)
 
 What you need...
 ----------------
