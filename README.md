@@ -7,7 +7,9 @@ Dependancies
 Software:
 
 [Adafruit_neopixel library](https://github.com/adafruit/Adafruit_NeoPixel)
+
 [fix_fft](https://github.com/newshorts/AudioJackFFT/tree/colorshifting/AudioJackFFT/fix_fft)
+
 [Radio Head](http://www.airspayce.com/mikem/arduino/RadioHead/index.html)
 
 Hardware:
