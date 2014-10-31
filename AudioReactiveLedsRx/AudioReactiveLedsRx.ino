@@ -1,3 +1,5 @@
+// Audio reactive LEDs Receiver
+
 //
 //  Beat Sync
 //  A music visualiztion device.
@@ -87,7 +89,7 @@ void fadeDown(int diff, int startHigh) {
   while(diff > count) {
     write_strip((startHigh - count));
     count++;
-    delayMicroseconds(diff*20);
+    delayMicroseconds(diff*10);
   }
 }
 
@@ -96,6 +98,6 @@ void write_strip(int brightness) {
     brightness = 255;
   }
   strip.setBrightness(brightness);
-  strip.setPixelColor(0,strip.Color(255,255,255));
+  strip.setPixelColor(0,strip.Color(abs(sin(brightness)*25),brightness,255));
   strip.show(); // Update strip 
 }
