@@ -94,15 +94,15 @@ void loop() {
   // calculate the average:
   average = total / numReadings;
   
-  // send it to the computer as ASCII digits
-  Serial.println(average);
-  
-  strip.setBrightness(Spectrum[SPECTRUM]);
+  strip.setBrightness(constrain((Spectrum[SPECTRUM]), 0, 255));
   if(skip <= 0) {
-    int spread = random(0, 10000)/Spectrum[SPECTRUM]; // get an even spread across the pixels
+    float equalizer = (120.0 / average);
+    int spread = constrain(random(0, (average * equalizer)), 0, 120); // get an even spread across the pixels
+    Serial.println(spread);
     uint32_t col = strip.Color(abs(sin(Spectrum[SPECTRUM])*25*hue),abs(cos(Spectrum[SPECTRUM])*25),constrain(Spectrum[SPECTRUM] - hue, 0, 255));
     strip.setPixelColor(spread,col);  
-    skip = (1000 * average) / (Spectrum[SPECTRUM]*Spectrum[SPECTRUM]);
+    skip = abs((10000*average) / (Spectrum[SPECTRUM]*Spectrum[SPECTRUM]));
+    
   }
   skip--;
   strip.show(); // Update strip 
