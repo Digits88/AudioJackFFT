@@ -57,7 +57,11 @@ void loop()
   int value = data_avgs[1];//0 for bass
   
   if(value > 0) {
-//    Serial.println(value);
+    Serial.print("value: ");
+    Serial.print(value);
+    Serial.print(" last value: ");
+    Serial.println(lastValue);
+    
     
     // fade
     if(lastValue < value) {
@@ -82,7 +86,7 @@ void fadeUp(int diff, int startLow) {
 } 
 
 void fadeDown(int diff, int startHigh) {
-  Serial.println(cos(startHigh));
+//  Serial.println(cos(startHigh));
   int count = 0;
   while(diff > count) {
     write_strip((startHigh - count));

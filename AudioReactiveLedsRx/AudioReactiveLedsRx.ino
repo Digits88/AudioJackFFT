@@ -7,6 +7,9 @@
 //  Mike Newell
 //
 
+#include "RH_ASK.h"
+#include <SPI.h> // Not actualy used but needed to compile
+
 #include "fix_fft.h"
 #include "Adafruit_NeoPixel.h"
 
@@ -15,6 +18,8 @@
 #define SENSITIVITY 10 //  how sensitive the sensor is 9
 #define AUDIOPIN 2
 #define POT_PIN 5
+
+RH_ASK driver;
  
 Adafruit_NeoPixel  strip = Adafruit_NeoPixel(N_PIXELS, LED_PIN, NEO_GRB + NEO_KHZ800);
 
@@ -32,45 +37,53 @@ void setup()
 {
   strip.begin();
   Serial.begin(9600);
+  
+  if (!driver.init())
+     Serial.println("RF init failed");
 }
 
 void loop()
 {
-  // FFT
-  for (i=0; i < 128; i++){                                   
-    val = analogRead(AUDIOPIN);                                  
-    data[i] = val;                                     
-    im[i] = 0;                                                   
-  };
-
-  fix_fft(data,im,7,0);
-
-  for (i=0; i< 64;i++){                                    
-    data[i] = sqrt(data[i] * data[i] + im[i] * im[i]);  // this gets the absolute value of the values in the
-    //array, so we're only dealing with positive numbers
-  };   
-
-  // average bars together
-  for (i=0; i<14; i++) {
-    data_avgs[i] = data[i*4] + data[i*4 + 1] + data[i*4 + 2] + data[i*4 + 3];   // average together
   
-    data_avgs[i] = map(data_avgs[i], 0, 30, 0, 9);                              // remap values for LoL
-  }
-  int value = data_avgs[1];//0 for bass
-  
-  if(value > 0) {
-//    Serial.println(value);
-    
-    // fade
-    if(lastValue < value) {
-      fadeUp(((value * SENSITIVITY) - (lastValue * SENSITIVITY)), value * SENSITIVITY);
-    } else if(lastValue > value) {
-      fadeDown(((lastValue * SENSITIVITY) - (value * SENSITIVITY)), lastValue * SENSITIVITY);
-    }
-    
-    lastValue = value;
-  }
+  uint8_t buf[RH_ASK_MAX_MESSAGE_LEN];
+  uint8_t buflen = sizeof(buf);
 
+  // PUT LED RECEIVED IN HERE
+  if (driver.recv(buf, &buflen)) {
+    int i;
+    
+    Serial.print("Buffer length: ");
+    Serial.print(buflen);
+    Serial.print(" Brightness: ");
+    Serial.print((uint8_t)buf[0]);
+    Serial.print(" R: ");
+    Serial.print((uint8_t)buf[1]);
+    Serial.print(" G: ");
+    Serial.print((uint8_t)buf[2]);
+    Serial.print(" B: ");
+    Serial.println((uint8_t)buf[3]);
+
+//    printBuffer("got: ", buf, buflen);
+    
+    strip.setBrightness(buf[0]);
+    strip.setPixelColor(0,strip.Color((uint8_t)buf[1],(uint8_t)buf[2],(uint8_t)buf[3]));
+    strip.show(); // Update strip 
+    
+    // Message with a good checksum received, dump it.
+//    driver.printBuffer("Got:", buf, buflen);
+    
+    
+    
+    // POWER THE LIGHTS HERE
+    // FIGURE OUT WHAT I NEED TO SAY TO FADE UP & DOWN
+//    if(lastValue < value) {
+//      fadeUp(((value * SENSITIVITY) - (lastValue * SENSITIVITY)), value * SENSITIVITY);
+//    } else if(lastValue > value) {
+//      fadeDown(((lastValue * SENSITIVITY) - (value * SENSITIVITY)), lastValue * SENSITIVITY);
+//    }
+   
+  }
+  
 }
 
 void fadeUp(int diff, int startLow) {
@@ -100,4 +113,23 @@ void write_strip(int brightness) {
   strip.setBrightness(brightness);
   strip.setPixelColor(0,strip.Color(abs(sin(brightness)*25),brightness,255));
   strip.show(); // Update strip 
+}
+
+// Diagnostic help
+void printBuffer(const char* prompt, const uint8_t* buf, uint8_t len)
+{
+    uint8_t i;
+
+    Serial.println(prompt);
+    for (i = 0; i < len; i++)
+    {
+	if (i % 16 == 15)
+	    Serial.println(buf[i], HEX);
+	else
+	{
+	    Serial.print(buf[i], HEX);
+	    Serial.print(' ');
+	}
+    }
+    Serial.println("");
 }
