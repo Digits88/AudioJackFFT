@@ -1,8 +1,7 @@
-// TODO: cancel out volume adjustment from the computer
-// TODO: make whole strip more active when louder, less active when softer
-// TODO: refactor
+// TODO: OPTIMIZE
 
 #include <Adafruit_NeoPixel.h>
+#include <VirtualWire.h>
 
 // leds
 #define N_PIXELS  120  // Number of pixels you are using
@@ -27,6 +26,9 @@ int index = 0;                  // the index of the current reading
 int total = 0;                  // the running total
 int average = 0;                // the average
 
+// virtual wire
+uint8_t message[2]; // the message to send, spectrum & spread
+
 void setup() {
 //  byte Counter;
   
@@ -41,6 +43,9 @@ void setup() {
   delay(100);
 
   initSpectrum();
+  delay(100);
+  
+  initVirtualWire();
   
 }
 
@@ -59,6 +64,19 @@ void loop() {
   
 }
 
+void initVirtualWire() {
+  // Initialise the IO and ISR
+  vw_set_ptt_inverted(true); // Required for DR3100
+//  vw_setup(2000);	 // Bits per sec
+  vw_setup(4800);	 // Bits per sec
+  vw_set_tx_pin(3); //Pin 3 is connected to "Digital Output" of receiver
+}
+
+void sendMessage(uint8_t * msg) {
+  vw_send(msg, 2);
+  vw_wait_tx(); // Wait until the whole message is gone
+}
+
 void initLeds() {
   // leds
   hue = 0.0;
@@ -70,18 +88,24 @@ void initLeds() {
 
 // leds
 void showLeds() {
-  strip.setBrightness(constrain((Spectrum[SPECTRUM]), 0, 255));
+  // send spectrum, spread
+//  strip.setBrightness(constrain((Spectrum[SPECTRUM]), 0, 255));
   if(skip <= 0) {
-    float equalizer = (120.0 / average);
-    int spread = constrain(random(0, (average * equalizer)), 0, 120); // get an even spread across the pixels
-    Serial.println(spread);
-    uint32_t col = strip.Color(abs(sin(Spectrum[SPECTRUM])*25*hue),abs(cos(Spectrum[SPECTRUM])*25),constrain(Spectrum[SPECTRUM] - hue, 0, 255));
-    strip.setPixelColor(spread,col);  
+//    float equalizer = (120.0 / average);
+//    int spread = constrain(random(0, (average * equalizer)), 0, 120); // get an even spread across the pixels
+//    Serial.println(spread);
+//    uint32_t col = strip.Color(abs(sin(Spectrum[SPECTRUM])*25*hue),abs(cos(Spectrum[SPECTRUM])*25),constrain(Spectrum[SPECTRUM] - hue, 0, 255));
+//    strip.setPixelColor(spread,col);  
     skip = abs((10000*average) / (Spectrum[SPECTRUM]*Spectrum[SPECTRUM]));
+    
+    // send over virtual wire
+    message[0] = Spectrum[SPECTRUM];
+    message[1] = average;
+    sendMessage(message);
   }
   skip--;
-  strip.show(); // Update strip 
-  hue += HUE_SPEED; // slowly adjust the hue overtime to red instead of blue
+//  strip.show(); // Update strip 
+//  hue += HUE_SPEED; // slowly adjust the hue overtime to red instead of blue
 }
 
 
